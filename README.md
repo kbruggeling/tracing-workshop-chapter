@@ -1,116 +1,184 @@
-# Distributed Tracing Application
+# Distributed Tracing Workshop
 
 This project demonstrates a distributed tracing setup with multiple microservices. It includes a web service with a button that triggers a chain of API calls through three Go services to fetch data from a PostgreSQL database.
 
 ## Architecture
 
-The application follows this flow when the button is clicked:
+The application consists of the following components arranged in a chain architecture:
 
-**Web Service** → **API 1** → **API 2** → **API 3** → **PostgreSQL Database**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐
+│ Web Service │───▶│ API Service │───▶│ API Service │───▶│ API Service │───▶│   PostgreSQL    │
+│  (Node.js)  │    │      1      │    │      2      │    │      3      │    │    Database     │
+│   Port 3000 │    │  Port 8081  │    │  Port 8082  │    │  Port 8083  │    │    Port 5432    │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────────┘
+```
 
-1. **Web Service** (Node.js/Express): Serves a simple HTML page with a button
-2. **API Service 1** (Go): Receives request from web service, calls API Service 2
-3. **API Service 2** (Go): Receives request from API 1, calls API Service 3  
-4. **API Service 3** (Go): Receives request from API 2, queries the database
-5. **PostgreSQL Database**: Contains sample user data
-6. **Tempo**: Distributed tracing backend (ready for future tracing implementation)
-7. **Grafana**: Visualization dashboard for traces (ready for future use)
+### Service Details
 
-## Quick Start
+1. **Web Service** (Node.js/Express)
+   - Serves a simple HTML page with a button
+   - Initiates the API chain when button is clicked
+   - Port: 3000
+
+2. **API Service 1** (Go)
+   - Receives requests from the web service
+   - Forwards requests to API Service 2
+   - Port: 8081
+
+3. **API Service 2** (Go)
+   - Receives requests from API Service 1
+   - Forwards requests to API Service 3
+   - Port: 8082
+
+4. **API Service 3** (Go)
+   - Receives requests from API Service 2
+   - Queries the PostgreSQL database
+   - Returns user data up the chain
+   - Port: 8083
+
+5. **PostgreSQL Database**
+   - Contains sample user data (10 users with names and emails)
+   - Database: testdb
+   - Credentials: testuser/testpass
+   - Port: 5432
+
+### Observability Stack
+
+6. **OpenTelemetry Collector**
+   - Collects and processes telemetry data
+   - Ready for distributed tracing implementation
+   - Port: 8888 (metrics), 13133 (health)
+
+7. **Tempo**
+   - Distributed tracing backend
+   - Stores and queries trace data
+   - Port: 3200
+
+8. **Grafana**
+   - Visualization dashboard for traces and metrics
+   - Pre-configured with Tempo as datasource
+   - Port: 3002 (admin/admin)
+
+## Setup Guide
 
 ### Prerequisites
 
 - Docker
 - Docker Compose
+- Make (optional, but recommended)
 
-### Running the Application
+### Quick Setup with Make
 
-1. Clone this repository
-2. Navigate to the project directory
-3. Start all services:
-
-```bash
-docker-compose up --build
-```
-
-4. Access the application:
-   - **Web Application**: http://localhost:3000
-   - **Grafana Dashboard**: http://localhost:3001 (admin/admin)
-   - **Individual APIs**:
-     - API 1: http://localhost:8081/health
-     - API 2: http://localhost:8082/health  
-     - API 3: http://localhost:8083/health
-
-### Testing the API Chain
-
-1. Open http://localhost:3000 in your browser
-2. Click the "Trigger API Chain" button
-3. The response will show user data fetched through the complete chain
-
-## Service Details
-
-### Web Service
-- **Port**: 3000
-- **Technology**: Node.js, Express
-- **Endpoints**:
-  - `GET /`: Serves the main HTML page
-  - `POST /api/trigger`: Triggers the API chain
-
-### API Services (1, 2, 3)
-- **Ports**: 8081, 8082, 8083
-- **Technology**: Go
-- **Endpoints**:
-  - `GET /health`: Health check
-  - `GET /api/data`: Main data endpoint (chains to next service)
-
-### Database
-- **Port**: 5432
-- **Technology**: PostgreSQL
-- **Database**: testdb
-- **Credentials**: testuser/testpass
-- **Sample Data**: 10 users with names and emails
-
-## Development
-
-### Project Structure
-
-```
-distributed-tracing-app/
-├── web-service/          # Node.js web application
-├── api-service-1/        # Go API service 1
-├── api-service-2/        # Go API service 2  
-├── api-service-3/        # Go API service 3
-├── database/             # PostgreSQL setup
-├── tempo/                # Tempo tracing configuration
-├── grafana/              # Grafana configuration
-├── docker-compose.yml    # Docker orchestration
-└── README.md
-```
-
-### Adding Distributed Tracing
-
-The application is ready for distributed tracing implementation:
-
-- **Tempo** is configured and running on port 3200
-- **Grafana** is configured with Tempo as a datasource
-- OpenTelemetry instrumentation can be added to each service
-
-### Stopping the Application
+This project includes a Makefile with convenient commands:
 
 ```bash
-docker-compose down
+# Show all available commands
+make help
+
+# Build all Docker images
+make build
+
+# Start all services in the background
+make up
+
+# Check health of all services
+make health
+
+# Show all service URLs
+make urls
+
+# Test the complete API chain
+make test
 ```
 
-To also remove volumes:
+### Step-by-Step Setup
 
-```bash
-docker-compose down -v
-```
+1. **Clone and navigate to the project**:
+   ```bash
+   git clone <repository-url>
+   cd tracing-workshop-chapter
+   ```
 
-## Troubleshooting
+2. **Build and start all services**:
+   ```bash
+   make build
+   make up
+   ```
 
-- If services fail to connect, ensure all containers are running: `docker-compose ps`
-- Check logs for individual services: `docker-compose logs <service-name>`
-- Database connection issues: Verify the database is ready before APIs start
+3. **Verify all services are running**:
+   ```bash
+   make health
+   ```
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+4. **Access the applications**:
+   ```bash
+   make urls
+   ```
+   - Web Application: http://localhost:3000
+   - Grafana Dashboard: http://localhost:3002 (admin/admin)
+   - Individual API health checks: ports 8081, 8082, 8083
+
+5. **Test the API chain**:
+   ```bash
+   make test
+   ```
+   Or manually visit http://localhost:3000 and click "Trigger API Chain"
+
+### Useful Commands
+
+- **View logs**: `make logs`
+- **Restart services**: `make restart`
+- **Stop services**: `make down`
+- **Clean up (stop and remove volumes)**: `make clean`
+
+## Assignments
+
+### Assignment 1: Implement Distributed Tracing in API Service 2
+
+**Objective**: Add OpenTelemetry tracing to `api-service-2` by following the implementation pattern used in `api-service-1`.
+
+**Background**: 
+Currently, `api-service-1` has distributed tracing implemented, but `api-service-2` is missing this instrumentation. This creates a gap in our trace visibility when requests flow through the service chain.
+
+**Task**:
+1. Examine the tracing implementation in `api-service-1/main.go`
+2. Identify the OpenTelemetry imports, initialization, and span creation patterns
+3. Apply the same tracing pattern to `api-service-2/main.go`
+4. Ensure spans are properly created for incoming requests and outgoing calls to `api-service-3`
+
+**Expected Outcome**:
+After implementation, traces should flow continuously from `api-service-1` → `api-service-2` → `api-service-3`, with no missing spans in the chain.
+
+**Verification**:
+- Use `make test` to trigger the API chain
+- Check Grafana (http://localhost:3002) to verify traces appear for `api-service-2`
+- Ensure trace context is properly propagated to `api-service-3`
+
+### Assignment 2: Find and Fix Performance Bottleneck
+
+**Objective**: Use distributed tracing to identify and resolve a performance bottleneck that causes API requests to take more than 3 seconds.
+
+**Background**: 
+Users have reported that the API chain is slow, with requests taking significantly longer than expected. Now that you have complete tracing visibility across all services (from Assignment 1), you can use this observability to pinpoint exactly where the delay occurs.
+
+**Task**:
+1. Trigger multiple API requests using `make test` or the web interface
+2. Use Grafana to analyze the trace data and identify which service/operation is causing the delay
+3. Examine the code in the problematic service to understand the root cause
+4. Implement a fix to reduce the response time to under 1 second
+5. Verify the fix using traces to confirm the bottleneck is resolved
+
+**Investigation Steps**:
+- Look at trace duration and span timings in Grafana
+- Identify which service has the longest span duration
+- Check for any artificial delays, inefficient database queries, or blocking operations
+- Compare "before" and "after" trace timings
+
+**Expected Outcome**:
+The complete API chain should respond in under 1 second, with traces clearly showing the performance improvement across all services.
+
+**Verification**:
+- Use `make test` to measure response times
+- Compare trace durations in Grafana before and after the fix
+- Ensure all services maintain proper tracing after the performance fix
