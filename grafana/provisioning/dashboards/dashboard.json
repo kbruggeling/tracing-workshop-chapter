@@ -1,0 +1,38 @@
+{
+  "annotations": [],
+  "panels": [
+    {
+      "datasource": "Tempo",
+      "type": "trace",
+      "title": "API Trace",
+      "targets": [
+        {
+          "query": "service=api-service-1 OR service=api-service-2 OR service=api-service-3",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showLegend": true,
+        "showTrace": true
+      }
+    },
+    {
+      "datasource": "Tempo",
+      "type": "graph",
+      "title": "Request Duration",
+      "targets": [
+        {
+          "query": "sum(rate(api_request_duration_seconds_sum[5m])) by (service)",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "legend": {
+          "show": true
+        }
+      }
+    }
+  ],
+  "schemaVersion": 26,
+  "version": 1
+}
