@@ -134,7 +134,26 @@ make test
 
 ## Assignments
 
-### Assignment 1: Implement Distributed Tracing in API Service 2
+### Assignment 1: Trace Analysis and Investigation
+
+**Objective**: Examine the existing distributed traces to understand the service chain and identify what's missing.
+
+**Background**: The application is already partially instrumented with distributed tracing. Your task is to analyze the current tracing data to understand how the services interact and spot any gaps.
+
+**Steps**:
+1. Start the services: `make up`
+2. Generate some traffic: `make test`
+3. Open Grafana: http://localhost:3000 (admin/admin)
+4. Navigate to **Explore** → **Tempo** data source
+5. Search for traces and examine them
+
+**Questions to answer**:
+- How many services are currently producing traces?
+- Can you see the complete request flow from web-service to api-service-3?
+- Which service appears to be missing from the trace chain?
+- What's the total duration of requests? Is there any performance issue visible?
+
+### Assignment 2: Implement Distributed Tracing
 
 **Objective**: Add OpenTelemetry tracing to `api-service-2` by following the implementation pattern used in `api-service-1`.
 
@@ -145,6 +164,7 @@ Currently, `api-service-1` has distributed tracing implemented, but `api-service
 1. Examine the tracing implementation in `api-service-1/main.go`
 2. Identify the OpenTelemetry imports, initialization, and span creation patterns
 3. Apply the same tracing pattern to `api-service-2/main.go`
+**Use `make rebuild` after making changes to ensure they are implemented in your stack*
 4. Ensure spans are properly created for incoming requests and outgoing calls to `api-service-3`
 
 **Expected Outcome**:
@@ -155,7 +175,7 @@ After implementation, traces should flow continuously from `api-service-1` → `
 - Check Grafana (http://localhost:3002) to verify traces appear for `api-service-2`
 - Ensure trace context is properly propagated to `api-service-3`
 
-### Assignment 2: Find and Fix Performance Bottleneck
+### Assignment 3: Find and Fix Performance Bottleneck
 
 **Objective**: Use distributed tracing to identify and resolve a performance bottleneck that causes API requests to take more than 3 seconds.
 
