@@ -17,7 +17,7 @@ func validateData() bool {
 	start := time.Now()
 	counter := 0
 
-	for time.Since(start) < 3*time.Second {
+	for time.Since(start) < 3*time.Millisecond {
 		counter = (counter * 7) % 1000000
 		counter++
 	}
