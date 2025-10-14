@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	_ "github.com/lib/pq"
+	"api-service-3/internal/data"
+
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -18,13 +17,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
-
-type User struct {
-	ID      int    `json:"id"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	Created string `json:"created"`
-}
 
 func main() {
 	// Initialize tracing
@@ -92,45 +84,36 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 	// Get tracer
 	tracer := otel.Tracer("api-service-3")
 
-	// Create a span for database operations using the request context
-	ctx, dbSpan := tracer.Start(r.Context(), "database-query-users")
-	defer dbSpan.End()
+	// Create a span for calling API 4
+	ctx, span := tracer.Start(r.Context(), "call-api-service-4")
+	defer span.End()
 
-	// Connect to database
-	db, err := sql.Open("postgres", "host=database port=5432 user=testuser password=testpass dbname=testdb sslmode=disable")
+	// Use HTTP client with tracing
+	client := http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
+
+	// Create request with context
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://api-service-4:8080/api/data", nil)
 	if err != nil {
-		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		http.Error(w, "Failed to create request", http.StatusInternalServerError)
 		return
 	}
-	defer db.Close()
 
-	// Query the database within the span context
-	rows, err := db.QueryContext(ctx, "SELECT id, name, email, created_at FROM users ORDER BY id LIMIT 10")
+	// Call API 4
+	resp, err := client.Do(req)
 	if err != nil {
-		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		http.Error(w, "Failed to call API 4", http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
+	defer resp.Body.Close()
 
-	var users []User
-	for rows.Next() {
-		var user User
-		var createdAt time.Time
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &createdAt)
-		if err != nil {
-			http.Error(w, "Failed to scan database row", http.StatusInternalServerError)
-			return
-		}
-		user.Created = createdAt.Format("2006-01-02 15:04:05")
-		users = append(users, user)
+	// Read response from API 4 using internal package
+	body, err := data.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, "Failed to read response from API 4", http.StatusInternalServerError)
+		return
 	}
 
-	// Return the data
+	// Return the data from API 4
 	w.Header().Set("Content-Type", "application/json")
-	response := map[string]interface{}{
-		"service":   "api-service-3",
-		"timestamp": time.Now().Format("2006-01-02 15:04:05"),
-		"users":     users,
-	}
-	json.NewEncoder(w).Encode(response)
+	w.Write(body)
 }

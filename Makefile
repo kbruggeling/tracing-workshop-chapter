@@ -31,6 +31,13 @@ test:
 	@curl -s http://localhost:8081/health | jq .
 	@curl -s http://localhost:8082/health | jq .
 	@curl -s http://localhost:8083/health | jq .
+	@curl -s http://localhost:8084/health | jq .
+	@curl -s http://localhost:8085/health | jq .
+	@curl -s http://localhost:8086/health | jq .
+	@curl -s http://localhost:8087/health | jq .
+	@curl -s http://localhost:8088/health | jq .
+	@curl -s http://localhost:8089/health | jq .
+	@curl -s http://localhost:8090/health | jq .
 	@echo "\nTesting full API chain..."
 	@curl -s -X POST http://localhost:3000/api/trigger | jq .
 
@@ -43,6 +50,20 @@ health:
 	@curl -s http://localhost:8082/health | jq . 2>/dev/null || echo "❌ Service 2 not responding"
 	@echo "\nAPI Service 3:"
 	@curl -s http://localhost:8083/health | jq . 2>/dev/null || echo "❌ Service 3 not responding"
+	@echo "\nAPI Service 4:"
+	@curl -s http://localhost:8084/health | jq . 2>/dev/null || echo "❌ Service 4 not responding"
+	@echo "\nAPI Service 5:"
+	@curl -s http://localhost:8085/health | jq . 2>/dev/null || echo "❌ Service 5 not responding"
+	@echo "\nAPI Service 6:"
+	@curl -s http://localhost:8086/health | jq . 2>/dev/null || echo "❌ Service 6 not responding"
+	@echo "\nAPI Service 7:"
+	@curl -s http://localhost:8087/health | jq . 2>/dev/null || echo "❌ Service 7 not responding"
+	@echo "\nAPI Service 8:"
+	@curl -s http://localhost:8088/health | jq . 2>/dev/null || echo "❌ Service 8 not responding"
+	@echo "\nAPI Service 9:"
+	@curl -s http://localhost:8089/health | jq . 2>/dev/null || echo "❌ Service 9 not responding"
+	@echo "\nAPI Service 10:"
+	@curl -s http://localhost:8090/health | jq . 2>/dev/null || echo "❌ Service 10 not responding"
 	@echo "\nWeb Service:"
 	@curl -s http://localhost:3000/ > /dev/null && echo "✅ Web service is running" || echo "❌ Web service not responding"
 	@echo "\nGrafana:"
@@ -59,6 +80,13 @@ urls:
 	@echo "API Service 1:       http://localhost:8081/health"
 	@echo "API Service 2:       http://localhost:8082/health"
 	@echo "API Service 3:       http://localhost:8083/health"
+	@echo "API Service 4:       http://localhost:8084/health"
+	@echo "API Service 5:       http://localhost:8085/health"
+	@echo "API Service 6:       http://localhost:8086/health"
+	@echo "API Service 7:       http://localhost:8087/health"
+	@echo "API Service 8:       http://localhost:8088/health"
+	@echo "API Service 9:       http://localhost:8089/health"
+	@echo "API Service 10:      http://localhost:8090/health"
 	@echo "Grafana Dashboard:   http://localhost:3002 (admin/admin)"
 	@echo "OTel Collector:      http://localhost:8888/metrics"
 	@echo "Tempo:               http://localhost:3200"

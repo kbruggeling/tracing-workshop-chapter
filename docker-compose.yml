@@ -35,6 +35,76 @@ services:
     environment:
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
     depends_on:
+      - api-service-4
+
+  api-service-4:
+    build:
+      context: ./api-service-4
+    ports:
+      - "8084:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-5
+
+  api-service-5:
+    build:
+      context: ./api-service-5
+    ports:
+      - "8085:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-6
+
+  api-service-6:
+    build:
+      context: ./api-service-6
+    ports:
+      - "8086:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-7
+
+  api-service-7:
+    build:
+      context: ./api-service-7
+    ports:
+      - "8087:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-8
+
+  api-service-8:
+    build:
+      context: ./api-service-8
+    ports:
+      - "8088:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-9
+
+  api-service-9:
+    build:
+      context: ./api-service-9
+    ports:
+      - "8089:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - api-service-10
+
+  api-service-10:
+    build:
+      context: ./api-service-10
+    ports:
+      - "8090:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
       - database
 
   database:
